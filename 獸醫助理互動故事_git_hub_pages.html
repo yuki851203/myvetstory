@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>獸醫助理的一天 — 互動故事範本</title>
+  <style>
+    :root{--bg:#0f1724;--card:#0b1220;--accent:#ff8c42;--muted:#98a0b3;--text:#e6eef6}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,"Noto Sans TC",sans-serif;background:linear-gradient(180deg,#071023 0%,#0f1724 100%);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+    .wrap{width:100%;max-width:860px}
+    .card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.03);border-radius:12px;padding:20px;box-shadow:0 6px 20px rgba(2,6,23,0.6)}
+    header{display:flex;gap:12px;align-items:center}
+    .logo{width:56px;height:56px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#ffc58f);display:flex;align-items:center;justify-content:center;font-weight:700;color:#071023}
+    h1{margin:0;font-size:18px}
+    p.lead{margin:6px 0 14px;color:var(--muted);font-size:13px}
+
+    .scene{min-height:220px}
+    .scene p{line-height:1.6;margin:0 0 16px}
+    .options{display:grid;gap:10px}
+    .btn{background:linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.05);padding:12px;border-radius:10px;color:var(--text);cursor:pointer;text-align:left;font-size:15px}
+    .btn small{display:block;color:var(--muted);font-size:12px;margin-top:6px}
+
+    .meta{display:flex;justify-content:space-between;align-items:center;margin-top:14px}
+    .progress{height:8px;background:rgba(255,255,255,0.04);border-radius:6px;overflow:hidden;flex:1;margin-right:12px}
+    .bar{height:100%;background:linear-gradient(90deg,var(--accent),#ffd29b);width:0%}
+    .actions{display:flex;gap:8px}
+    .link{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px;border-radius:8px;color:var(--muted);font-size:13px}
+
+    footer{margin-top:14px;color:var(--muted);font-size:13px;text-align:center}
+
+    @media (max-width:520px){.card{padding:14px}.logo{width:46px;height:46px}.btn{font-size:14px;padding:10px}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card" role="application" aria-label="獸醫助理的一天 互動故事">
+      <header>
+        <div class="logo">VA</div>
+        <div>
+          <h1>獸醫助理的一天 — 互動故事</h1>
+          <p class="lead">以助理視角體驗一個班次。點選選項，觀看不同回應。適合放在 GitHub Pages 或分享連結。</p>
+        </div>
+      </header>
+
+      <main>
+        <section class="scene" id="scene">
+          <!-- story injected by JS -->
+        </section>
+
+        <div class="options" id="opts"></div>
+
+        <div class="meta">
+          <div class="progress" aria-hidden>
+            <div class="bar" id="bar"></div>
+          </div>
+          <div class="actions">
+            <button class="link" id="back">上一步</button>
+            <button class="link" id="restart">重新開始</button>
+          </div>
+        </div>
+
+        <footer>
+          版本：互動範本 • 可客製化內容與分支 • 以故事驅動的學習體驗
+        </footer>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    // STORY NODES: id, text (HTML allowed), options: [{text, goto}]
+    const NODES = {
+      start: {
+        text: `<p>今天上班的路上，你對自己說：「今天一定也可以的。」<br>三個月了，有時候會面臨緊急狀況，有時候會手足無措，也會有小小的奇蹟。你不知道今天等著你的會是什麼。</p>`,
+        options: [
+          {text: '「今天希望可以平靜點…」', goto: 'enter'},
+          {text: '「來吧，今天不管發生甚麼我都可以的！」', goto: 'enter'}
+        ]
+      },
+
+      enter: {
+        text: `<p>進到診所，你決定先做什麼？</p>`,
+        options: [
+          {text:'先泡杯咖啡、慢慢開始', goto:'phone'},
+          {text:'趕緊開始處理事情', goto:'phone'}
+        ]
+      },
+
+      phone: {
+        text:`<p>剛坐沒兩分鐘，電話響了：「我…我是愛媽，我撿到一隻被車撞的浪浪，幾分鐘就到。」</p>`,
+        options:[
+          {text:'向外科醫師轉達', goto:'prepare'},
+          {text:'愣了一下，但還是去跟醫生說', goto:'prepare'}
+        ]
+      },
+
+      prepare: {
+        text:`<p>10 分鐘後，一位愛媽抱著被外套包住的黃狗衝進來，聲音顫抖地說：「他被撞了，車主還逃走！」</p>`,
+        options:[
+          {text:'協助醫師先檢傷', goto:'triage'},
+          {text:'詢問愛媽事故經過', goto:'triage'}
+        ]
+      },
+
+      triage: {
+        text:`<p>你檢傷後發現：CRT&gt;2 秒、呼吸 75 次/分、脫水、四肢擦傷。</p><p>你要如何分類？</p>`,
+        options:[
+          {text:'紅色（立即處理）', goto:'classified_wrong'},
+          {text:'橘色（15 分鐘內處理）', goto:'classified_wrong'},
+          {text:'黃色（30-60 分鐘內處理）', goto:'classified_yellow'}
+        ]
+      },
+
+      classified_wrong: {
+        text:`<p>你的判定與團隊最終判定不同，但在助理的職場上，溝通與快速調整很重要。請回到檢傷流程，和醫師一起更新處置。</p>`,
+        options:[{text:'回到檢傷流程', goto:'triage'}]
+      },
+
+      classified_yellow: {
+        text:`<p>你判定為黃色，開始安排抽血、影像與觀察。血檢暫時沒有明顯異常，但 X 光與超音波顯示膀胱破裂、骨盆骨折與髖關節脫臼。醫師準備手術。</p>`,
+        options:[{text:'帶狗去手術室準備', goto:'surgery'}]
+      },
+
+      surgery: {
+        text:`<p>你協助麻醉前準備、器材消毒、布置復甦區。手術中你在旁確認儀器數據。手術順利完成，半小時後狗慢慢醒來。</p><p>術後你為牠鋪好毛巾、紀錄體溫與輸液速度，並交接給住院部同事。</p>`,
+        options:[{text:'稍微休息一下（午餐）', goto:'lunch'}]
+      },
+
+      lunch: {
+        text:`<p>時間接近中午，你拿出帶來的便當—但心裡還在想早上的狗，你發現牠的眼神好像讓你想起了阿黃。</p>`,
+        options:[
+          {text:'小睡片刻', goto:'postop_check'},
+          {text:'叫外送吃飯', goto:'postop_check'},
+          {text:'微波準備好的便當', goto:'postop_check'}
+        ]
+      },
+
+      postop_check: {
+        text:`<p>吃過、休息過後，你填寫術後照護紀錄，定時檢查呼吸與傷口。離開住院部時，牠已經逐漸穩定，你才放心離開。</p>`,
+        options:[{text:'巡房，看看貓咪', goto:'ward_cat'}]
+      },
+
+      ward_cat: {
+        text:`<p>你在住院室發現一隻戴著頭套的貓，正在警戒地喵叫。看紀錄後你發現牠該吃藥了。</p>`,
+        options:[
+          {text:'確認餵藥時間並給藥', goto:'cat_med'},
+          {text:'先離開避免讓牠更緊張', goto:'cat_wait'},
+          {text:'嘗試靠近、輕聲安撫', goto:'cat_soothe'}
+        ]
+      },
+
+      cat_med: {text:`<p>你準時給藥，也稍微觀察牠的反應。牠雖然緊張，但在你的穩定動作下沒有再激動。</p>`, options:[{text:'回到櫃檯', goto:'front'}]},
+      cat_wait: {text:`<p>你保持距離，請同事協助處理藥物。牠的緊張似乎緩和了一點。</p>`, options:[{text:'回到櫃檯', goto:'front'}]},
+      cat_soothe: {text:`<p>你蹲下來用低聲跟牠說話，牠警戒了幾秒後稍微放鬆。你確認牠接下來可以吃藥。</p>`, options:[{text:'回到櫃檯', goto:'front'}]},
+
+      front: {
+        text:`<p>回到櫃檯，你還沉在早上那隻狗狗的回憶，這時有位飼主走來：「我來帶咪咪回家了。」你看了病歷，發現咪咪已於兩年前過世。</p>`,
+        options:[{text:'問資深前輩確認', goto:'ask_senior'},{text:'直接告訴飼主咪咪已過世', goto:'tell_owner'}]
+      },
+
+      ask_senior: {text:`<p>資深前輩說：她每年都會在咪咪過世的日子來，說要帶咪咪回家。你感到鼻酸。</p>`, options:[{text:'走向飼主，準備說清楚', goto:'talk_owner'}]},
+      tell_owner: {text:`<p>你直接告訴飼主咪咪已離開，飼主聽到立刻情緒崩潰。你陪伴著她，讓她把話說完。</p>`, options:[{text:'繼續陪伴並聆聽', goto:'talk_owner'}]},
+
+      talk_owner: {text:`<p>飼主問是否可以在診所為咪咪燒金紙，你需要決定如何處理。</p>`, options:[{text:'委婉拒絕並提供其他方式', goto:'offer_alternative'},{text:'詢問前輩可否通融', goto:'ask_senior2'},{text:'直接幫忙準備一個安全的燒紙區', goto:'prepare_burning'}]},
+
+      offer_alternative: {text:`<p>你說明診所無法在室內燒紙，但可以陪她到外面燒，並提供紙與小桶。她在安靜中完成了儀式，情緒平復後離開。</p>`, options:[{text:'回到櫃檯', goto:'front_after'}]},
+      ask_senior2: {text:`<p>前輩同意在外面的角落提供短暫協助。你陪著飼主完成簡單儀式，飼主流下眼淚後離開，感謝你。</p>`, options:[{text:'回到櫃檯', goto:'front_after'}]},
+      prepare_burning: {text:`<p>你幫她準備了鐵桶和安全的場所，陪著她燒完紙。結束後她默默離開，你也感到一陣心疼。</p>`, options:[{text:'回到櫃檯', goto:'front_after'}]},
+
+      front_after: {text:`<p>你回到櫃檯，時間快到下班。這時一對母女帶著小兔子來詢問照護，媽媽滿心緊張。</p>`, options:[{text:'耐心講解與示範', goto:'rabbit'}, {text:'簡短回覆，叫他們回家再看', goto:'rabbit_short'}]},
+
+      rabbit: {text:`<p>你帶他們到診間，示範抱法、說明牧草是主食、紅蘿蔔是零食、強調水與腸胃保健要點。母女記錄重點，女兒抱著兔子說會好好照顧牠。</p>`, options:[{text:'準備下班巡房', goto:'end_check'}]},
+      rabbit_short: {text:`<p>你簡短回答後，母女看起來還是很緊張，你心想下次應該給更多時間解說。</p>`, options:[{text:'準備下班巡房', goto:'end_check'}]},
+
+      end_check: {text:`<p>下班前你再次確認早上的手術狗已經穩定，安心離開診所。夕陽染紅回家的路，你想起阿黃，那份讓你走進這行的原因。</p><p>你回家後打開課程講義，邊看回放邊做筆記。你知道自己還有很多要學，但也慢慢感受到：這份工作值得。</p>`, options:[{text:'結束：回到首頁', goto:'start'}]}
+    };
+
+    // history stack for back button
+    let history = ['start'];
+    const sceneEl = document.getElementById('scene');
+    const optsEl = document.getElementById('opts');
+    const barEl = document.getElementById('bar');
+    const backBtn = document.getElementById('back');
+    const restartBtn = document.getElementById('restart');
+
+    function render(nodeId){
+      const node = NODES[nodeId];
+      history.push(nodeId);
+      sceneEl.innerHTML = node.text;
+      optsEl.innerHTML = '';
+      node.options.forEach((op, idx)=>{
+        const b = document.createElement('button');
+        b.className='btn';
+        b.innerHTML = op.text;
+        b.onclick = ()=>{
+          const next = op.goto;
+          // small animation
+          b.disabled=true;
+          setTimeout(()=>{
+            render(next);
+          },120);
+        };
+        optsEl.appendChild(b);
+      });
+      updateProgress();
+    }
+
+    function updateProgress(){
+      // progress based on history length (simple heuristic)
+      const len = Math.min(history.length, 12);
+      const pct = Math.round((len/12)*100);
+      barEl.style.width = pct + '%';
+    }
+
+    backBtn.addEventListener('click', ()=>{
+      if(history.length>1){
+        history.pop(); // current
+        history.pop(); // previous
+        const prev = history.pop() || 'start';
+        render(prev);
+      }
+    });
+
+    restartBtn.addEventListener('click', ()=>{
+      history = ['start'];
+      render('start');
+    });
+
+    // start
+    render('start');
+
+  </script>
+</body>
+</html>
